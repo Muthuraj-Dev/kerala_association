@@ -1,8 +1,11 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:kerala_association/common_widget/common_button.dart';
 import 'package:kerala_association/core/model/otp_response.dart';
 import 'package:kerala_association/ui/views/otp/otp_screen.dart';
 
+import '../../../common_widget/common_dialog.dart';
 import '../../../services/api_base_service.dart';
 import '../../../services/request_method.dart';
 import '../../../services/secure_storage_service.dart';
@@ -28,7 +31,6 @@ class PhoneController extends GetxController {
     });
   }
 
-
   /// store otp session info
   int? otpId;
 
@@ -43,8 +45,7 @@ class PhoneController extends GetxController {
     try {
       isLoading(true);
 
-      final OtpResponse response =
-      await ApiBaseService.request<OtpResponse>(
+      final OtpResponse response = await ApiBaseService.request<OtpResponse>(
         'OTP/SentOTP?mobileNumber=$phone',
         method: RequestMethod.GET,
         authenticated: false,
@@ -56,11 +57,42 @@ class PhoneController extends GetxController {
         await storage.write('mobile_number', phone);
 
         /// Navigate only after success
-        Get.to(() => OtpScreen(
-          mobileNumber: phone,
-          otpId: otpId!,
-          sentOtp: response.data!.sentOtp!,
-        ));
+        Get.to(
+          () => OtpScreen(
+            mobileNumber: phone,
+            otpId: otpId!,
+            sentOtp: response.data!.sentOtp!,
+          ),
+        );
+      } else if (response.status == "100" && response.data != null) {
+        CommonDialog.showCustomDialog(
+          content: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.block, color: Colors.red, size: 60),
+                const SizedBox(height: 12),
+                const Text(
+                  "Account Deleted",
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  "Your account has been deleted. Please contact support or create a new account.",
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 20),
+                CommonButton(
+                  text: "Ok",
+                  onPressed: () {
+                    Get.back();
+                  },
+                ),
+              ],
+            ),
+          ),
+        );
       } else {
         Get.snackbar(
           "Error",
@@ -78,6 +110,10 @@ class PhoneController extends GetxController {
     } finally {
       isLoading(false);
     }
+  }
+
+  void clearPhone() {
+    phoneController.clear();
   }
 
   @override

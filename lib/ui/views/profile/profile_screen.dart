@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
@@ -12,154 +11,6 @@ import 'package:kerala_association/ui/views/refund/refund_screen.dart';
 import 'package:kerala_association/ui/views/terms/terms_screeen.dart';
 import '../contactUs/contact_screen.dart';
 import '../create_account/create_account_screen.dart';
-
-// class ProfileScreen extends StatefulWidget {
-//   const ProfileScreen({super.key});
-//
-//   @override
-//   State<ProfileScreen> createState() => _ProfileScreenState();
-// }
-//
-// class _ProfileScreenState extends State<ProfileScreen> {
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       backgroundColor: AppColor.background,
-//       body: SafeArea(
-//         child: SingleChildScrollView(
-//           child: Padding(
-//             padding: const EdgeInsets.all(16.0),
-//             child: Column(
-//               crossAxisAlignment: CrossAxisAlignment.start,
-//               children: [
-//                 Text(
-//                   "My Profile",
-//                   style: TextStyle(color: AppColor.green, fontSize: 24),
-//                 ),
-//                 SizedBox(height: 14),
-//                 Container(
-//                   decoration: BoxDecoration(
-//                     borderRadius: BorderRadius.circular(28),
-//                     border: Border.all(color: AppColor.secondary),
-//                   ),
-//                   child: Padding(
-//                     padding: const EdgeInsets.all(14.0),
-//                     child: Column(
-//                       children: [
-//                         Row(
-//                           crossAxisAlignment: CrossAxisAlignment.start,
-//                           mainAxisAlignment: MainAxisAlignment.start,
-//                           children: [
-//                             Image.asset("assets/profile_inactive.png",color: AppColor.secondary,),
-//                             SizedBox(width: 10),
-//                             Expanded(
-//                               child: Column(
-//                                 crossAxisAlignment: CrossAxisAlignment.start,
-//                                 children: [
-//                                   Text(
-//                                     "Hi, Sir",
-//                                     style: TextStyle(
-//                                       fontSize: 18,
-//                                       fontWeight: FontWeight.w500,
-//                                     ),
-//                                   ),
-//
-//                                   Text(
-//                                     "Login or Signup to access new features and connections",
-//                                   ),
-//                                 ],
-//                               ),
-//                             ),
-//                             SizedBox(height: 10),
-//                           ],
-//                         ),
-//                         SizedBox(height: 12),
-//                         CommonButton(
-//                           text: "Login / Sign Up",
-//                           onPressed: () {
-//                             Get.to(PhoneScreen());
-//                           },
-//                           fillColor: AppColor.secondary,
-//                           borderRadius: BorderRadius.circular(60),
-//                         ),
-//                       ],
-//                     ),
-//                   ),
-//                 ),
-//
-//                 SizedBox(height: 26),
-//                 Text(
-//                   "Your Info Center:",
-//                   style: TextStyle(color: AppColor.green, fontSize: 18),
-//                 ),
-//                 SizedBox(height: 10),
-//                 _listTile('Premium', 'assets/crown.svg', () {
-//                   print('Team tapped!');
-//                   Get.to(PremiumScreen());
-//                 }),
-//                 // _listTile('Management', 'assets/team.svg', () {
-//                 //   print('Team tapped!');
-//                 //   Get.to(ManagementScreen());
-//                 // }),
-//                 _listTile('About Us', 'assets/info.svg', () {
-//                   Get.to(AboutScreen());
-//                 }),
-//                 _listTile('Terms & Conditions', 'assets/terms.svg', () {
-//                   Get.to((TermsScreen()));
-//                 }),
-//                 _listTile('Privacy Policy', 'assets/privacy_policy.svg', () {
-//                   Get.to(PolicyScreen());
-//                 }),
-//                 _listTile(
-//                   'Refund and Cancellation Policy',
-//                   'assets/refund.svg',
-//                   () {
-//                     Get.to(RefundScreen());
-//                   },
-//                 ),
-//                 _listTile('Contact Us', 'assets/contact.svg', () {
-//                   //    Get.to(GuideScreen());
-//                   Get.to(ContactScreen());
-//                 }),
-//                 _listTile('Logout', 'assets/logout.svg', () {
-//               //    Get.to(ContactScreen());
-//                 }),
-//               ],
-//             ),
-//           ),
-//         ),
-//       ),
-//     );
-//   }
-//
-//   _listTile(String name, String icon, VoidCallback onTap) {
-//     return Column(
-//       children: [
-//         InkWell(
-//           onTap: () {
-//             onTap();
-//           },
-//           child: Padding(
-//             padding: const EdgeInsets.symmetric(vertical: 12),
-//             child: Row(
-//               children: [
-//                 SvgPicture.asset(icon, color: AppColor.green),
-//                 SizedBox(width: 6),
-//                 Text(
-//                   name,
-//                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
-//                 ),
-//                 Spacer(),
-//                 Icon(Icons.arrow_forward_ios, size: 18),
-//               ],
-//             ),
-//           ),
-//         ),
-//         Divider(color: AppColor.black),
-//       ],
-//     );
-//   }
-// }
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -187,7 +38,7 @@ class ProfileScreen extends StatelessWidget {
 
 void _navigateToLogin() {
   Get.to(() => const PhoneScreen());
-//  Get.to(() => CreateAccountScreen());
+  //  Get.to(() => CreateAccountScreen());
 }
 
 class _Header extends StatelessWidget {
@@ -218,7 +69,7 @@ class _Header extends StatelessWidget {
             ),
             padding: const EdgeInsets.all(14),
             child:
-                controller.isLoggedIn.value
+                controller.hasPan.value
                     ? _LoggedInView(controller: controller)
                     : _GuestView(),
           );
@@ -251,10 +102,11 @@ class _LoggedInView extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 4),
+              controller.memberId.isNotEmpty ?
               Text(
                 "Member ID: ${controller.memberId.value}",
                 style: const TextStyle(fontSize: 14),
-              ),
+              ) : SizedBox.shrink(),
               const SizedBox(height: 2),
               Row(
                 children: [
@@ -265,11 +117,11 @@ class _LoggedInView extends StatelessWidget {
                   const SizedBox(width: 8),
                   GestureDetector(
                     onTap: () {
-                  //    Get.off(() => CreateAccountScreen());
                       Get.to(
-                            () => CreateAccountScreen(),
+                        () => CreateAccountScreen(),
                         arguments: {
                           "isEdit": true,
+                          "data": controller.userData.value,
                         },
                       );
                     },
@@ -282,7 +134,7 @@ class _LoggedInView extends StatelessWidget {
                     ),
                   ),
                 ],
-              )
+              ),
             ],
           ),
         ),
@@ -350,64 +202,65 @@ class _InfoTitle extends StatelessWidget {
 
 class _ProfileMenu extends StatelessWidget {
   ProfileController controller;
+
   _ProfileMenu(this.controller);
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        // _ProfileTile(
-        //   title: 'Premium',
-        //   icon: 'assets/crown.svg',
-        //   onTap: () => Get.to(() => const PremiumScreen()),
-        // ),
-        _ProfileTile(
-          title: 'About Us',
-          icon: 'assets/info.svg',
-          onTap: () => Get.to(() => const AboutScreen()),
-        ),
-        _ProfileTile(
-          title: 'Terms & Conditions',
-          icon: 'assets/terms.svg',
-          onTap: () => Get.to(() => const TermsScreen()),
-        ),
-        _ProfileTile(
-          title: 'Privacy Policy',
-          icon: 'assets/privacy_policy.svg',
-          onTap: () => Get.to(() => const PolicyScreen()),
-        ),
-        _ProfileTile(
-          title: 'Refund and Cancellation Policy',
-          icon: 'assets/refund.svg',
-          onTap: () => Get.to(() => const RefundScreen()),
-        ),
-        _ProfileTile(
-          title: 'Contact Us',
-          icon: 'assets/contact.svg',
-          onTap: () => Get.to(() => const ContactScreen()),
-        ),
-        controller.isLoggedIn.value ?
-        _ProfileTile(
-          title: 'Logout',
-          icon: 'assets/logout.svg',
-          onTap: controller.logout,
-          showDivider: true,
-        ) : SizedBox.shrink(),
+    return Obx((){
+      return Column(
+        children: [
+          // _ProfileTile(
+          //   title: 'Premium',
+          //   icon: 'assets/crown.svg',
+          //   onTap: () => Get.to(() => const PremiumScreen()),
+          // ),
+          _ProfileTile(
+            title: 'About Us',
+            icon: 'assets/info.svg',
+            onTap: () => Get.to(() => const AboutScreen()),
+          ),
+          _ProfileTile(
+            title: 'Terms & Conditions',
+            icon: 'assets/terms.svg',
+            onTap: () => Get.to(() => const TermsScreen()),
+          ),
+          _ProfileTile(
+            title: 'Privacy Policy',
+            icon: 'assets/privacy_policy.svg',
+            onTap: () => Get.to(() => const PolicyScreen()),
+          ),
+          _ProfileTile(
+            title: 'Refund and Cancellation Policy',
+            icon: 'assets/refund.svg',
+            onTap: () => Get.to(() => const RefundScreen()),
+          ),
+          _ProfileTile(
+            title: 'Contact Us',
+            icon: 'assets/contact.svg',
+            onTap: () => Get.to(() => const ContactScreen()),
+          ),
+          controller.hasPan.value
+              ? _ProfileTile(
+            title: 'Logout',
+            icon: 'assets/logout.svg',
+            onTap: controller.logout,
+            showDivider: true,
+          )
+              : SizedBox.shrink(),
 
-        controller.isLoggedIn.value ?
-        _ProfileTile(
-          title: 'Account Deletion',
-          icon: 'assets/delete.svg',
-          onTap: controller.deleteAccount,
-          showDivider: false,
-        ) : SizedBox.shrink(),
-
-      ],
-    );
+          controller.hasPan.value
+              ? _ProfileTile(
+            title: 'Account Deletion',
+            icon: 'assets/delete.svg',
+            onTap: controller.deleteAccount,
+            showDivider: false,
+          )
+              : SizedBox.shrink(),
+        ],
+      );
+    });
   }
-
-
-
 }
 
 class _ProfileTile extends StatelessWidget {
@@ -453,8 +306,6 @@ class _ProfileTile extends StatelessWidget {
     );
   }
 }
-
-
 
 // class SemiCircleProgress extends StatelessWidget {
 //   final double percentage;
@@ -548,7 +399,6 @@ class _ProfileTile extends StatelessWidget {
 //   @override
 //   bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 // }
-
 
 // class _Header extends StatelessWidget {
 //   const _Header();

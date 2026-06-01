@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:kerala_association/ui/views/create_account/create_account_controller.dart';
 import 'package:kerala_association/ui/views/events/event_controller.dart';
 import 'package:kerala_association/ui/views/members/member_controller.dart';
 import 'package:kerala_association/ui/views/news/news_controller.dart';
@@ -26,7 +27,10 @@ class AppBinding extends Bindings {
     Get.lazyPut(() => ProfileController(), fenix: true);
     Get.lazyPut(() => MemberController());
     Get.lazyPut(() => NewsDetailController(), fenix: true);
-    Get.put(PhoneController(), permanent: true);
+    // Get.put(PhoneController(), permanent: true);
+    Get.put(PhoneController());
+
+    Get.lazyPut(() => CreateAccountController(), fenix: true);
 
     // Better approach (lazyPut) (recommended)
     // ✔ Created only when needed

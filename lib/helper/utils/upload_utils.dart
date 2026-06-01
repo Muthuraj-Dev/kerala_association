@@ -15,7 +15,7 @@ class UploadUtils {
     required String mobileNumber,
     required RxBool isUploadLoading,
     required RxString uploadingKey,
-    required void Function(String uploadedFileName, String uploadedFileUrl) onSuccess,
+    required void Function(String uploadedFileName, String uploadedFileUrl,int updatedStatus) onSuccess,
   }) {
     void startUpload(UploadSource source) {
       Navigator.pop(context);

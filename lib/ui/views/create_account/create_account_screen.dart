@@ -6,21 +6,17 @@ import 'package:kerala_association/common_widget/common_button.dart';
 import 'package:kerala_association/common_widget/common_dropdown.dart';
 import 'package:kerala_association/common_widget/common_text_field.dart';
 import 'package:kerala_association/common_widget/tap_outside_unfocus.dart';
-import 'package:kerala_association/core/model/company_type.dart';
 import 'package:kerala_association/core/res/colors.dart';
 import 'package:kerala_association/ui/widgets/common_file_picker_box.dart';
 import 'package:kerala_association/ui/widgets/file_preview_widget.dart';
-import '../../../core/enum/view_state.dart';
-import '../../../core/model/districtList.dart';
-import '../../../core/model/stateList.dart';
 import 'create_account_controller.dart';
 
 class CreateAccountScreen extends StatelessWidget {
   CreateAccountScreen({super.key});
 
-  final CreateAccountController controller = Get.put(CreateAccountController());
+  final CreateAccountController controller =
+      Get.find<CreateAccountController>();
 
-  // --- Helper Widget for Label + Field ---
   Widget _buildField({required String label, required Widget field}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
@@ -45,7 +41,11 @@ class CreateAccountScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: AppColor.background,
         elevation: 0,
-        title: const Text("Create Account"),
+        title: Obx(
+          () => Text(
+            !controller.isEditMode.value ? "Create Account" : "Update User",
+          ),
+        ),
       ),
       body: TapOutsideUnFocus(
         child: SingleChildScrollView(
@@ -61,8 +61,10 @@ class CreateAccountScreen extends StatelessWidget {
                     children: [
                       SvgPicture.asset("assets/account.svg", height: 54),
                       const SizedBox(height: 8),
-                      const Text(
-                        "Create Account",
+                      Text(
+                        !controller.isEditMode.value
+                            ? "Create Account"
+                            : "Update User",
                         style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.w600,
@@ -104,14 +106,13 @@ class CreateAccountScreen extends StatelessWidget {
                         ),
                       ),
                     ),
-
                     const SizedBox(width: 8),
 
                     /// 🔥 SAME PREVIEW WIDGET
                     FilePreviewWidget(
                       filePath: controller.profilePhotoUrl,
                       fileName: controller.photoFileName,
-                      errorText: ''.obs, // avoid duplicate error
+                      errorText: ''.obs,
                       isLoading: controller.isUploadLoading,
                     ),
                   ],
@@ -146,34 +147,6 @@ class CreateAccountScreen extends StatelessWidget {
                                 : null,
                   ),
                 ),
-
-                // _buildField(
-                //   label: "Company Type",
-                //   field: CommonDropdown<String>(
-                //     items:
-                //         CompanyType.values
-                //             .map(
-                //               (e) =>
-                //                   e.name[0].toUpperCase() + e.name.substring(1),
-                //             )
-                //             .toList(),
-                //     hintText: 'Company Type*',
-                //     selectedItem:
-                //         controller.companyTypeController.text.isNotEmpty
-                //             ? controller.companyTypeController.text
-                //             : null,
-                //     onChanged: (value) {
-                //       if (value != null) {
-                //         controller.companyTypeController.text = value;
-                //       }
-                //     },
-                //     validator:
-                //         (val) =>
-                //             val == null || val.isEmpty
-                //                 ? 'Please select company type'
-                //                 : null,
-                //   ),
-                // ),
                 _buildField(
                   label: "Company Type",
                   field: Obx(() {
@@ -186,13 +159,11 @@ class CreateAccountScreen extends StatelessWidget {
                       hintText: 'Company Type*',
 
                       selectedItem: controller.selectedCompanyTypeId.value,
-
-                      // 👇 convert ID → display text
                       itemAsString: (id) {
-                        final item = controller.companyTypeList.firstWhere(
-                          (e) => e.companyTypeID == id,
-                        );
-                        return item.companyType ?? '';
+                        final item = controller.companyTypeList
+                            .firstWhereOrNull((e) => e.companyTypeID == id);
+
+                        return item?.companyType ?? '';
                       },
 
                       onChanged: (value) {
@@ -240,9 +211,9 @@ class CreateAccountScreen extends StatelessWidget {
                     hintText: 'Select your Area',
                     validator:
                         (val) =>
-                    val == null || val.isEmpty
-                        ? 'Please enter state'
-                        : null,
+                            val == null || val.isEmpty
+                                ? 'Please enter state'
+                                : null,
                   ),
                 ),
 
@@ -285,16 +256,18 @@ class CreateAccountScreen extends StatelessWidget {
                   label: "District",
                   field: Obx(() {
                     return CommonDropdown<int>(
-                      items: controller.selectedStateId.value == null
-                          ? []
-                          : controller.districtList.map((e) => e.districtID!).toList(),
+                      items:
+                          controller.districtList
+                              .map((e) => e.districtID!)
+                              .toList(),
                       hintText: 'Select District*',
                       selectedItem: controller.selectedDistrictId.value,
 
                       itemAsString: (id) {
                         final district = controller.districtList
-                            .firstWhere((e) => e.districtID == id);
-                        return district.districtName ?? '';
+                            .firstWhereOrNull((e) => e.districtID == id);
+
+                        return district?.districtName ?? '';
                       },
 
                       onChanged: (value) {
@@ -332,6 +305,8 @@ class CreateAccountScreen extends StatelessWidget {
                     focusNode: controller.pinCodeFocusNode,
                     keyboardType: TextInputType.number,
                     hintText: 'Enter your pincode',
+                    maxLength: 6,
+
                     validator:
                         (val) =>
                             val == null || val.isEmpty
@@ -346,16 +321,18 @@ class CreateAccountScreen extends StatelessWidget {
                     return CommonTextField(
                       controller: controller.phoneNumberController,
                       focusNode: controller.phoneNumberFocusNode,
-                      enabled: controller.mobileNumber.isEmpty,
-                      suffixIcon: controller.mobileNumber.isNotEmpty
-                          ? Icon(Icons.lock, size: 16)
-                          : null,
+                      enabled: controller.mobileNumber.value.isEmpty,
+                      suffixIcon:
+                          controller.mobileNumber.value.isNotEmpty
+                              ? Icon(Icons.lock, size: 16)
+                              : null,
                       keyboardType: TextInputType.phone,
                       hintText: 'Enter your phone number',
-                      validator: (val) =>
-                      val == null || val.isEmpty
-                          ? 'Please enter phone number'
-                          : null,
+                      validator:
+                          (val) =>
+                              val == null || val.isEmpty
+                                  ? 'Please enter phone number'
+                                  : null,
                     );
                   }),
                 ),
@@ -389,14 +366,16 @@ class CreateAccountScreen extends StatelessWidget {
                       selectedItem: controller.selectedCompanyProfileId.value,
 
                       itemAsString: (id) {
-                        final item = controller.companyProfileList.firstWhere(
-                          (e) => e.profileID == id,
-                        );
-                        return item.profile ?? '';
+                        final item = controller.companyProfileList
+                            .firstWhereOrNull((e) => e.profileID == id);
+                        return item?.profile ?? '';
                       },
 
                       onChanged: (value) {
                         controller.selectedCompanyProfileId.value = value;
+                        print(
+                          "selectedCompanyProfileId ${controller.selectedCompanyProfileId.value}",
+                        );
                       },
 
                       validator:
@@ -455,40 +434,6 @@ class CreateAccountScreen extends StatelessWidget {
                       errorText: ''.obs, // avoid duplicate error
                       isLoading: controller.isUploadLoading,
                     ),
-                    //
-                    // Obx(() {
-                    //   final panUrl = controller.panUrl.value;
-                    //
-                    //   if (panUrl.isEmpty) {
-                    //     return const SizedBox();
-                    //   }
-                    //
-                    //   return GestureDetector(
-                    //     onTap: () {
-                    //       showImagePreview(context, panUrl);
-                    //     },
-                    //     child: ClipRRect(
-                    //       borderRadius: BorderRadius.circular(12),
-                    //       child: CachedNetworkImage(
-                    //         imageUrl:
-                    //         "$panUrl?ts=${DateTime.now().millisecondsSinceEpoch}",
-                    //         fit: BoxFit.cover,
-                    //         width: 92,
-                    //         height: 92,
-                    //         placeholder: (context, url) => const Center(
-                    //           child: Padding(
-                    //             padding: EdgeInsets.all(33.0),
-                    //             child: CircularProgressIndicator(strokeWidth: 2),
-                    //           ),
-                    //         ),
-                    //         errorWidget: (context, url, error) => Image.asset(
-                    //           'assets/logo.png',
-                    //           fit: BoxFit.cover,
-                    //         ),
-                    //       ),
-                    //     ),
-                    //   );
-                    // }),
                   ],
                 ),
                 const SizedBox(height: 14),
@@ -545,40 +490,6 @@ class CreateAccountScreen extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 14),
-
-                // _buildField(
-                //   label: "ID Type",
-                //   field: CommonDropdown<String>(
-                //     items:
-                //         IDType.values
-                //             .map(
-                //               (e) =>
-                //                   e.name[0].toUpperCase() + e.name.substring(1),
-                //             )
-                //             .toList(),
-                //     hintText: 'ID-Type',
-                //     selectedItem:
-                //         controller.idTypeController.text.isNotEmpty
-                //             ? controller.idTypeController.text.capitalizeFirst
-                //             : null,
-                //     onChanged: (value) {
-                //       IDType? selectedStatus = IDType.values.firstWhere(
-                //         (e) => e.name.toLowerCase() == value?.toLowerCase(),
-                //         orElse: () => IDType.aadhaar,
-                //       );
-                //       controller.idTypeController.text = selectedStatus.name;
-                //       print(
-                //         "controller.idTypeController.text ${controller.idTypeController.text}",
-                //       );
-                //     },
-                //     validator: (val) {
-                //       if (val == null || val.isEmpty) {
-                //         return 'Please select ID-Type';
-                //       }
-                //       return null;
-                //     },
-                //   ),
-                // ),
                 _buildField(
                   label: "ID Type",
                   field: Obx(() {
@@ -666,36 +577,6 @@ class CreateAccountScreen extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 14),
-
-                // --- Company Profile Checkbox Section ---
-                // const Text(
-                //   "Company Profile",
-                //   style: TextStyle(fontSize: 18, color: Color(0xff875C00)),
-                // ),
-                // Obx(
-                //   () => Column(
-                //     children:
-                //         controller.businessTypeOptions.map((type) {
-                //           return CheckboxListTile(
-                //             title: Text(
-                //               type,
-                //               style: const TextStyle(
-                //                 fontSize: 16,
-                //                 fontWeight: FontWeight.w500,
-                //               ),
-                //             ),
-                //             value: controller.selectedType.value == type,
-                //             onChanged: (bool? value) {
-                //               controller.selectedType.value =
-                //                   value == true ? type : null;
-                //             },
-                //             dense: true,
-                //             controlAffinity: ListTileControlAffinity.leading,
-                //             contentPadding: EdgeInsets.zero,
-                //           );
-                //         }).toList(),
-                //   ),
-                // ),
                 Obx(() {
                   if (controller.businessTypeError.value.isEmpty) {
                     return const SizedBox();
@@ -714,16 +595,21 @@ class CreateAccountScreen extends StatelessWidget {
                 }),
                 const SizedBox(height: 30),
                 // --- Submit Button ---
-                CommonButton(
-                  text: "Create Account",
-                  onPressed: controller.createAccount,
-                  //     text: controller.isLoading.value ? "Please wait..." : "Create Account",
-                  borderRadius: BorderRadius.circular(40),
-                  suffixIcon: SvgPicture.asset(
-                    "assets/arrow_outward.svg",
-                    color: Colors.white,
-                  ),
-                ),
+                Obx(() {
+                  return CommonButton(
+                    isLoading: controller.isLoading.value,
+                    onPressed: controller.createAccount,
+                    text:
+                        controller.isLoading.value
+                            ? "Please wait..."
+                            : "Create Account",
+                    borderRadius: BorderRadius.circular(40),
+                    suffixIcon: SvgPicture.asset(
+                      "assets/arrow_outward.svg",
+                      color: Colors.white,
+                    ),
+                  );
+                }),
                 const SizedBox(height: 40),
               ],
             ),

@@ -95,6 +95,10 @@ class DashboardController extends GetxController {
     selectedIndex.value = index;
   }
 
+  void goToTab(int index) {
+    selectedIndex.value = index;
+  }
+
   bool _hasCheckedUpdate = false;
 
   @override

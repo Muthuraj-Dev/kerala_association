@@ -225,6 +225,7 @@ class _CommonTextFieldState extends State<CommonTextField> {
       cursorWidth: widget.cursorWidth,
       onChanged: widget.onChanged,
       onFieldSubmitted: widget.onSubmitted,
+
       enabled: widget.enabled,
       maxLength: widget.maxLength,
       maxLines: widget.maxLines,
@@ -236,6 +237,7 @@ class _CommonTextFieldState extends State<CommonTextField> {
             ? (widget.fillColor ?? AppColor.white)
             : Colors.grey.shade300,
         filled: true,
+        counterText: "",
         contentPadding: widget.contentPadding,
         border: OutlineInputBorder(
           borderRadius: widget.borderRadius as BorderRadius,

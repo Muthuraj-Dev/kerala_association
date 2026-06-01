@@ -7,6 +7,7 @@ import 'package:kerala_association/ui/views/create_account/create_account_screen
 import '../../../services/api_base_service.dart';
 import '../../../services/request_method.dart';
 import '../../../services/secure_storage_service.dart';
+import '../dashboard/dashboard_controller.dart';
 import '../dashboard/dashboard_screen.dart';
 import '../members/member_controller.dart';
 import '../profile/profile_controller.dart';
@@ -188,15 +189,16 @@ class OtpController extends GetxController {
 
       final String memberId = data?['memberID'] ?? "";
       final String memberName = data?['memberName'] ?? "";
-      final String mobile = data?['mobileNumber'] ?? "";
+      final String mobileNumber = data?['mobileNumber'] ?? "";
       final int isNewData = data?['isNewData'] ?? 1;
+      final String panNumber = data?['panNumber'].toString() ?? "";
       final int approvalStatus = data?['approvalStatus'] ?? 0;
 
-      /// ✅ STORE EVERYTHING CONSISTENTLY
-      await storage.write('mobile_number', mobile);
+      await storage.write('mobile_number', mobileNumber);
       await storage.write('member_id', memberId);
       await storage.write('member_name', memberName);
       await storage.write('is_data_new', isNewData.toString());
+      await storage.write('panNumber', panNumber.toString());
       await storage.write('approval_status', approvalStatus.toString());
 
       /// 🆕 NEW USER
@@ -209,19 +211,23 @@ class OtpController extends GetxController {
       await storage.write('is_logged_in', 'true');
 
       /// ⚠️ APPROVAL CHECK
-      if (approvalStatus == 0) {
-        Get.snackbar(
-          'Approval Pending',
-          'Your account is under review',
-          snackPosition: SnackPosition.BOTTOM,
-        );
+      if (isNewData == 0) {
+        // Get.snackbar(
+        //   'Approval Pending',
+        //   'Your account is under review',
+        //   snackPosition: SnackPosition.BOTTOM,
+        // );
 
-        Get.offAll(() => CreateAccountScreen());
+        print("Existing User - as PAN AVAILABLE");
+        await Get.find<ProfileController>().initProfile();
+        Get.offAll(() => DashboardScreen());
+        Get.find<DashboardController>().goToTab(3);
+
         return;
       }
 
       /// ✅ APPROVED USER
-      await Get.find<ProfileController>().loadProfile();
+      await Get.find<ProfileController>().initProfile();
       await Get.find<MemberController>().loadProfile();
 
       Get.offAll(() => CreateAccountScreen());
@@ -234,6 +240,7 @@ class OtpController extends GetxController {
             : 'Something went wrong',
         snackPosition: SnackPosition.BOTTOM,
       );
+      print("ee $e");
     } finally {
       isLoading.value = false;
     }

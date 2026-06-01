@@ -8,6 +8,8 @@ import '../../../common_widget/common_dialog.dart';
 import '../../../services/api_base_service.dart';
 import '../../../services/request_method.dart';
 import '../../../services/secure_storage_service.dart';
+import '../create_account/create_account_controller.dart';
+import '../phone/phone_controller.dart';
 import '../phone/phone_screen.dart';
 
 class ProfileController extends GetxController {
@@ -21,23 +23,67 @@ class ProfileController extends GetxController {
 
   final isLoading = false.obs;
 
+  Rxn<Map<String, dynamic>> userData = Rxn<Map<String, dynamic>>();
+
+  final RxBool hasPan = false.obs;
 
   @override
   void onInit() {
     super.onInit();
-    loadProfile();
+    // loadProfile();
+    // loadUserData();
+
+    initProfile();
   }
 
-  Future<void> loadProfile() async {
-    final loggedIn = await _storage.read("is_logged_in");
+  Future<void> initProfile() async {
+    print("LOAD GET MEMBER DATA");
+    await loadUserDataFromPan();
+  }
 
-    if (loggedIn == "true") {
-      isLoggedIn.value = true;
-      memberName.value = await _storage.read("member_name") ?? '';
-      memberId.value = await _storage.read("member_id") ?? '';
-      mobileNumber.value = await _storage.read("mobile_number") ?? '';
-    } else {
-      isLoggedIn.value = false;
+  Future<void> loadUserDataFromPan() async {
+    try {
+      isLoading.value = true;
+
+      final storedPan = await _storage.read('panNumber');
+
+      if (storedPan == null || storedPan.isEmpty) {
+        print("Pan is Empty Now");
+        hasPan.value = false;
+        return;
+      }
+
+      hasPan.value = true;
+
+      final response =
+      await ApiBaseService.request<Map<String, dynamic>>(
+        'UserData/GetMemberData?PANNumber=$storedPan',
+        method: RequestMethod.GET,
+        authenticated: false,
+      );
+
+      if (response['status'] != 200) {
+        hasPan.value = false;
+        return;
+      }
+
+      final data = response['data'];
+
+      if (data != null && data is Map<String, dynamic>) {
+        userData.value = data;
+
+        memberName.value = data['memberName'] ?? '';
+        memberId.value = data['memberID'] ?? '';
+        mobileNumber.value = data['mobileNumber'] ?? '';
+
+        hasPan.value = (data['panNumber'] ?? '').toString().isNotEmpty;
+        isLoggedIn.value = true;
+      }
+
+    } catch (e) {
+      hasPan.value = false;
+    } finally {
+      isLoading.value = false;
     }
   }
 
@@ -48,15 +94,15 @@ class ProfileController extends GetxController {
       onConfirm: () async {
         Get.back();
 
-        isLoggedIn.value = false;
+        hasPan.value = false; // 🔥 IMPORTANT FIX
         memberName.value = '';
         memberId.value = '';
         mobileNumber.value = '';
 
-
-
+        Get.find<PhoneController>().clearPhone();
         await _storage.clear();
-        /// Navigate to Login
+
+        /// Navigate to Dashboard → Home
         Get.find<DashboardController>().selectedIndex.value = 0;
         Get.offAll(() => DashboardScreen());
       },
@@ -78,20 +124,20 @@ class ProfileController extends GetxController {
           return;
         }
 
-        // ✅ Only clear AFTER successful API call
-        isLoggedIn.value = false;
+        hasPan.value = false; // 🔥 IMPORTANT FIX
         memberName.value = '';
         memberId.value = '';
         mobileNumber.value = '';
 
+        Get.find<PhoneController>().clearPhone();
         await _storage.clear();
+
         /// Navigate to Login
         Get.find<DashboardController>().selectedIndex.value = 0;
         Get.offAll(() => DashboardScreen());
       },
     );
   }
-
 
   Future<bool> deleteAccountApi(String memberId) async {
     try {

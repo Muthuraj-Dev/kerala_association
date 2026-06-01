@@ -20,7 +20,7 @@ class FileUploadHelper {
     required String fileType,
     required String gstNumber,
     required String mobileNumber,
-    required Function(String uploadedFileName, String uploadedFileUrl) onSuccess,
+    required Function(String uploadedFileName, String uploadedFileUrl,int updatedStatus) onSuccess,
     required RxBool isUploadLoading,
     required RxString uploadingKey,
   }) async {
@@ -108,7 +108,8 @@ class FileUploadHelper {
         if (data is List && data.isNotEmpty) {
           final uploadedFileName = data[0]['fileName'];
           final uploadedUrl = data[0]['url'];
-          onSuccess(uploadedFileName, uploadedUrl);
+          final updatedStatus = data[0]['updatedStatus'];
+          onSuccess(uploadedFileName, uploadedUrl,updatedStatus);
         } else {
           Fluttertoast.showToast(msg: "Invalid response from server");
           return;

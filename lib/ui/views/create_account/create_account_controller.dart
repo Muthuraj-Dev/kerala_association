@@ -1,7 +1,11 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
+import 'package:kerala_association/common_widget/common_button.dart';
+import 'package:kerala_association/common_widget/common_dialog.dart';
 import 'package:kerala_association/core/model/stateList.dart';
+import 'package:kerala_association/core/res/colors.dart';
 
 import '../../../controllers/master_data_controller.dart';
 import '../../../core/model/company_profile.dart';
@@ -13,7 +17,7 @@ import '../../../services/api_base_service.dart';
 import '../../../services/request_method.dart';
 import '../../../services/secure_storage_service.dart';
 import '../dashboard/dashboard_screen.dart';
-
+import '../profile/profile_controller.dart';
 
 class CreateAccountController extends GetxController {
   // ---------------- Controllers ----------------
@@ -78,6 +82,11 @@ class CreateAccountController extends GetxController {
   RxString gstFileName = ''.obs;
   RxString idProofFileName = ''.obs;
 
+  final profileUpdatedStatusID = 0.obs;
+  final panUpdatedStatusID = 0.obs;
+  final gstUpdatedStatusID = 0.obs;
+  final idProofUpdatedStatusID = 0.obs;
+
   final isLoading = false.obs;
 
   final MasterDataController masterData = Get.find<MasterDataController>();
@@ -106,18 +115,17 @@ class CreateAccountController extends GetxController {
 
   RxBool isMetaLoaded = false.obs;
 
+  int? pendingDistrictId;
+  int? pendingCompanyProfileId;
+  int? pendingCompanyTypeId;
+  int? pendingIDProofTypeId;
+
   @override
   void onInit() {
     super.onInit();
 
     loadPhoneNumber();
-    loadUserMeta(); // 👈 ADD THIS
-
-    final args = Get.arguments;
-
-    if (args != null && args["isEdit"] == true) {
-      isEditMode.value = true;
-    }
+    loadUserMeta();
 
     // ✅ States
     stateList.assignAll(masterData.states);
@@ -129,35 +137,75 @@ class CreateAccountController extends GetxController {
     companyTypeList.assignAll(masterData.companyTypes);
     ever(masterData.companyTypes, (_) {
       companyTypeList.assignAll(masterData.companyTypes);
+      applyCompanyTypeSelection();
     });
 
     // ✅ Company Profiles
     companyProfileList.assignAll(masterData.companyProfiles);
     ever(masterData.companyProfiles, (_) {
       companyProfileList.assignAll(masterData.companyProfiles);
+      applyCompanyProfileSelection();
     });
 
     // ✅ Proof Types
     proofTypeList.assignAll(masterData.proofTypes);
     ever(masterData.proofTypes, (_) {
       proofTypeList.assignAll(masterData.proofTypes);
+      applyIDProofSelection();
     });
 
-    // District
     ever(selectedStateId, (stateId) async {
       if (stateId != null) {
-
         final districts = await fetchDistricts(stateId);
 
         districtList.assignAll(districts);
 
-        // reset district when state changes
-        selectedDistrictId.value = null;
+        // ✅ NOW safe to restore selected district
+        if (isEditMode.value && pendingDistrictId != null) {
+          selectedDistrictId.value = pendingDistrictId;
+          pendingDistrictId = null;
+        }
       } else {
         districtList.clear();
         selectedDistrictId.value = null;
       }
     });
+
+    final args = Get.arguments;
+
+    if (args != null) {
+      isEditMode.value = args["isEdit"] == true;
+
+      print("isEditMode ${isEditMode.value}");
+
+      if (isEditMode.value && args["data"] != null) {
+        prefillData(args["data"]);
+      }
+      applyCompanyTypeSelection();
+      applyCompanyProfileSelection();
+      applyIDProofSelection();
+    }
+  }
+
+  void applyCompanyTypeSelection() {
+    if (pendingCompanyTypeId != null && companyTypeList.isNotEmpty) {
+      selectedCompanyTypeId.value = pendingCompanyTypeId;
+      pendingCompanyTypeId = null;
+    }
+  }
+
+  void applyCompanyProfileSelection() {
+    if (pendingCompanyProfileId != null && companyProfileList.isNotEmpty) {
+      selectedCompanyProfileId.value = pendingCompanyProfileId;
+      pendingCompanyProfileId = null;
+    }
+  }
+
+  void applyIDProofSelection() {
+    if (pendingIDProofTypeId != null && proofTypeList.isNotEmpty) {
+      selectedProofTypeId.value = pendingIDProofTypeId;
+      pendingIDProofTypeId = null;
+    }
   }
 
   Future<void> loadPhoneNumber() async {
@@ -170,6 +218,8 @@ class CreateAccountController extends GetxController {
     if (number.isNotEmpty) {
       phoneNumberController.text = number;
     }
+
+    update(); // 👈 IMPORTANT (if using GetBuilder)
   }
 
   Future<void> loadUserMeta() async {
@@ -219,128 +269,7 @@ class CreateAccountController extends GetxController {
     return null;
   }
 
-  // final SecureStorageService _secureStorage = SecureStorageService();
   final storage = Get.find<SecureStorageService>();
-
-  // Future<void> createAccount() async {
-  //   bool isValid = formSignUp.currentState?.validate() ?? false;
-  //
-  //   if (!isMetaLoaded.value) {
-  //     print("⛔ Meta not loaded yet");
-  //     return;
-  //   }
-  //
-  //   if (!validateAllDocuments()) {
-  //     isValid = false;
-  //   }
-  //
-  //   final businessValid = validateBusinessType();
-  //   if (!businessValid) isValid = false;
-  //
-  //   if (!isValid) return;
-  //
-  //   try {
-  //     isLoading.value = true;
-  //
-  //     final body = {
-  //       "memberID": isDataNew.value == 1 ? "" : memberId,
-  //
-  //       "memberName": nameController.text.trim(),
-  //       "designation": designationController.text.trim(),
-  //       "companyName": companyController.text.trim(),
-  //
-  //       "address": addressController.text.trim(),
-  //       "city": cityController.text.trim(),
-  //
-  //       "pincode": pinCodeController.text.trim(),
-  //
-  //       "district": "", // optional (API uses districtID)
-  //       "state": "",
-  //
-  //       "emailID": emailController.text.trim(),
-  //
-  //       "mobileNumber": phoneNumberController.text.trim(),
-  //       "maskedMobileNumber": "",
-  //
-  //       // ---------------- DROPDOWN IDS ----------------
-  //       "companyTypeID": selectedCompanyTypeId.value ?? 0,
-  //       "companyProfileID": selectedCompanyProfileId.value ?? 0,
-  //       "stateID": selectedStateId.value ?? 0,
-  //       "districtID": selectedDistrictId.value ?? 0,
-  //
-  //       // ---------------- PROFILE ----------------
-  //       "profile": "", // if needed, else keep empty
-  //
-  //       // ---------------- APP ----------------
-  //       "appID": "31a0a9e2-28e6-f011-b836-126635fa33e6",
-  //
-  //       "area": areaController.text.trim(),
-  //
-  //       // ---------------- PHOTO ----------------
-  //       "memberPhotoURL": "",
-  //       "photoFileName": photoFileName.value,
-  //       "isPhotoUpdated": profilePhotoUrl.value.isNotEmpty ? 1 : 0,
-  //
-  //       // ---------------- PAN ----------------
-  //       "panNumber": companyPanController.text.trim(),
-  //       "panFileName": panFileName.value,
-  //       "isPANUpdated": panFileName.value.isNotEmpty ? 1 : 0,
-  //
-  //       // ---------------- GST ----------------
-  //       "gstNumber": gstController.text.trim(),
-  //       "gstFileName": gstFileName.value,
-  //       "isGSTUpdated": gstController.text.trim().isNotEmpty ? 1 : 0,
-  //
-  //       // ---------------- ID PROOF ----------------
-  //       "idProofType": selectedProofTypeId.value?.toString() ?? "",
-  //       "idProofNumber": idNumberController.text.trim(),
-  //       "idProofFileName": idProofFileName.value,
-  //       "isIDProofUpdated": idProofFileName.value.isNotEmpty ? 1 : 0,
-  //
-  //       // ---------------- FLAG ----------------
-  //       "isDataNew":  isDataNew.value, // 🔥 VERY IMPORTANT
-  //     };
-  //
-  //     print("BODY DATA - $body");
-  //
-  //     final response = await ApiBaseService.request<Map<String, dynamic>>(
-  //       'MemberData/SaveUserData',
-  //       method: RequestMethod.POST,
-  //       body: body,
-  //       authenticated: false,
-  //     );
-  //
-  //     if (response['status'] != 200) {
-  //       throw Exception(response['message'] ?? 'Failed to create account');
-  //     }
-  //
-  //     final data = response['data'];
-  //     final memberId = data?['memberID'];
-  //
-  //     if (memberId != null) {
-  //       await storage.write('member_id', memberId.toString());
-  //       await storage.write('is_logged_in', 'true');
-  //     }
-  //
-  //     Get.snackbar(
-  //       'Success',
-  //       response['message'] ?? 'Account created successfully',
-  //       snackPosition: SnackPosition.BOTTOM,
-  //     );
-  //
-  //     Get.offAll(() => DashboardScreen());
-  //
-  //   } catch (e) {
-  //     Get.snackbar(
-  //       'Error',
-  //       e.toString().replaceFirst('Exception: ', ''),
-  //       snackPosition: SnackPosition.BOTTOM,
-  //     );
-  //     print(e);
-  //   } finally {
-  //     isLoading.value = false;
-  //   }
-  // }
 
   Future<void> createAccount() async {
     bool isValid = formSignUp.currentState?.validate() ?? false;
@@ -351,7 +280,6 @@ class CreateAccountController extends GetxController {
     }
 
     if (!validateAllDocuments()) isValid = false;
- // if (!validateBusinessType()) isValid = false;
 
     if (!isValid) return;
 
@@ -362,7 +290,8 @@ class CreateAccountController extends GetxController {
 
       final body = {
         "memberID": isNew ? "" : memberId,
-        "isDataNew": isNew ? 1 : 0,
+        //     "isDataNew": isNew && isEditMode.value ? 1 : 0,
+        "isDataNew": isEditMode.value ? 0 : 1,
 
         "memberName": nameController.text.trim(),
         "designation": designationController.text.trim(),
@@ -393,29 +322,32 @@ class CreateAccountController extends GetxController {
         // ✅ PHOTO
         "memberPhotoURL": "",
         "photoFileName": photoFileName.value,
-        "isPhotoUpdated": profilePhotoUrl.value.isNotEmpty ? 1 : 0,
+        "isPhotoUpdated": profileUpdatedStatusID.value,
+        // profilePhotoUrl.value.isNotEmpty ? 1 : 0,  // - 0
 
         // ✅ PAN
         "panNumber": companyPanController.text.trim(),
         "panFileName": panFileName.value,
-        "isPANUpdated": panFileName.value.isNotEmpty ? 1 : 0,
+        "isPANUpdated": panUpdatedStatusID.value,
+        // - 0
 
         // ✅ GST
         "gstNumber": gstController.text.trim(),
         "gstFileName": gstFileName.value,
-        "isGSTUpdated": gstController.text.trim().isNotEmpty ? 1 : 0,
+        "isGSTUpdated": gstUpdatedStatusID.value,
+        // gstController.text.trim().isNotEmpty ? 1 : 0,
 
         // ✅ ID PROOF
-        "idProofType": selectedProofTypeId.value?.toString() ?? "",
+        "idProofType": selectedProofTypeId.value ?? 0,
         "idProofNumber": idNumberController.text.trim(),
         "idProofFileName": idProofFileName.value,
-        "isIDProofUpdated": idProofFileName.value.isNotEmpty ? 1 : 0,
+        "isIDProofUpdated": idProofUpdatedStatusID.value,
       };
 
       print("BODY DATA - $body");
 
       final response = await ApiBaseService.request<Map<String, dynamic>>(
-        'MemberData/SaveUserData',
+        'UserData/SaveMemberData',
         method: RequestMethod.POST,
         body: body,
         authenticated: false,
@@ -423,26 +355,49 @@ class CreateAccountController extends GetxController {
 
       print("RESPONSE DATA : $response");
 
-      // if (response['status'] != 200) {
-      //   throw Exception(response['message'] ?? 'Failed to save account');
-      // }
-      //
-      // final data = response['data'];
-      // final String newMemberId = data?['memberID'] ?? "";
-      //
-      // if (newMemberId.isNotEmpty) {
-      //   await storage.write('member_id', newMemberId);
-      //   await storage.write('is_logged_in', 'true');
-      //   await storage.write('is_data_new', '0'); // 🔥 IMPORTANT after save
-      // }
+      if (response['status'] != 200) {
+        throw Exception(response['message'] ?? 'Failed to save account');
+      }
 
-      Get.snackbar(
-        'Success',
-        'Account saved successfully',  // response['message'] ??
-        snackPosition: SnackPosition.BOTTOM,
+      final String message = response['data'] ?? 'Account saved successfully';
+
+      await storage.write('panNumber', companyPanController.text);
+
+      // ✅ Show success message
+      // Get.snackbar('Success', message, snackPosition: SnackPosition.BOTTOM);
+      // CommonDialog.showCustomDialog(content: )
+
+      CommonDialog.showCustomDialog(
+        content: Padding(
+          padding: const EdgeInsets.all(18.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.check_circle, color: Colors.green, size: 60),
+              const SizedBox(height: 16),
+              Text(
+                "Success",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              Text(message, textAlign: TextAlign.center),
+              const SizedBox(height: 20),
+              IntrinsicWidth(
+                child: CommonButton(
+                  text: "Done",
+                  fillColor: AppColor.green,
+                  onPressed: () async {
+                    Get.back();
+                    Get.offAll(() => DashboardScreen());
+                  },
+                ),
+              )
+            ],
+          ),
+        ),
       );
 
-  //    Get.offAll(() => DashboardScreen());
+      await Get.find<ProfileController>().initProfile();
 
     } catch (e) {
       Get.snackbar(
@@ -450,10 +405,60 @@ class CreateAccountController extends GetxController {
         e.toString().replaceFirst('Exception: ', ''),
         snackPosition: SnackPosition.BOTTOM,
       );
-      print(e);
+      print("EEE $e");
     } finally {
       isLoading.value = false;
     }
+  }
+
+  void prefillData(Map<String, dynamic> data) {
+    nameController.text = data['memberName'] ?? '';
+    designationController.text = data['designation'] ?? '';
+    companyController.text = data['companyName'] ?? '';
+    addressController.text = data['address'] ?? '';
+    cityController.text = data['city'] ?? '';
+    areaController.text = data['area'] ?? '';
+    pinCodeController.text = data['pincode'] ?? '';
+    phoneNumberController.text = data['mobileNumber'] ?? '';
+    emailController.text = data['emailID'] ?? '';
+    companyPanController.text = data['panNumber'] ?? '';
+    gstController.text = data['gstNumber'] ?? '';
+
+    idNumberController.text = data['idProofNumber'] ?? '';
+    pendingIDProofTypeId = int.tryParse(data['idProofType']?.toString() ?? '');
+
+    // ✅ Dropdown IDs
+    selectedStateId.value = data['stateID'];
+    pendingDistrictId = data['districtID'];
+    pendingCompanyTypeId = data['companyTypeID'];
+    pendingCompanyProfileId = data['companyProfileID'];
+
+    // ✅ File URL
+    profilePhotoUrl.value = data['memberPhotoURL'] ?? '';
+    panUrl.value = data['panFileURL'] ?? '';
+    gstUrl.value = data['gstFileURL'] ?? '';
+    idProofUrl.value = data['idProofFileURL'] ?? '';
+
+    // ✅ File names
+    photoFileName.value = data['photoFileName'] ?? '';
+    panFileName.value = data['panFileName'] ?? '';
+    gstFileName.value = data['gstFileName'] ?? '';
+    idProofFileName.value = data['idProofFileName'] ?? '';
+
+    // ✅ Status flags
+    profileUpdatedStatusID.value = data['isPhotoUpdated'] ?? 0;
+    panUpdatedStatusID.value = data['isPANUpdated'] ?? 0;
+    gstUpdatedStatusID.value = data['isGSTUpdated'] ?? 0;
+    idProofUpdatedStatusID.value = data['isIDProofUpdated'] ?? 0;
+
+    // ✅ Meta
+    isDataNew.value = data['isDataNew'] ?? 0;
+    memberId = data['memberID'];
+
+    print("----- DEBUG COMPANY PROFILE -----");
+    print("Pending: $pendingCompanyProfileId");
+    print("Selected: ${selectedCompanyProfileId.value}");
+    print("List: ${companyProfileList.map((e) => e.profileID).toList()}");
   }
 
   bool validateAllDocuments() {
@@ -501,19 +506,9 @@ class CreateAccountController extends GetxController {
     return true;
   }
 
-  // bool validateBusinessType() {
-  //   if (selectedType.value == null) {
-  //     businessTypeError.value = 'Please select company profile';
-  //     return false;
-  //   }
-  //
-  //   businessTypeError.value = '';
-  //   return true;
-  // }
-
   String getSelectedStateName() {
     final state = stateList.firstWhere(
-          (e) => e.stateID == selectedStateId.value,
+      (e) => e.stateID == selectedStateId.value,
     );
     return state.stateName ?? '';
   }
@@ -537,59 +532,42 @@ class CreateAccountController extends GetxController {
     );
   }
 
-  // Function(String, String)? getUploadHandler(String key) {
-  //   switch (key) {
-  //     case 'photoCopy':
-  //       return (_, url) {
-  //         profilePhotoUrl.value = url;
-  //         profilePhotoError.value = '';
-  //       };
-  //     case 'panCopy':
-  //       return (_, url) {
-  //         panUrl.value = url;
-  //         panError.value = '';
-  //       };
-  //     case 'gstCopy':
-  //       return (_, url) {
-  //         gstUrl.value = url;
-  //         gstError.value = '';
-  //       };
-  //   }
-  //   return null;
-  // }
-
-  Function(String, String)? getUploadHandler(String key) {
+  Function(String, String, int)? getUploadHandler(String key) {
     switch (key) {
       case 'photoCopy':
-        return (fileName, url) {
+        return (fileName, url, updatedStatus) {
           profilePhotoUrl.value = url;
           photoFileName.value = fileName;
           profilePhotoError.value = '';
+          profileUpdatedStatusID.value = updatedStatus;
 
           print("✅ PHOTO FILE NAME: $fileName");
           print("✅ PHOTO URL SET: $url");
-
+          print("✅ UPDATED STATUS: $updatedStatus");
         };
 
       case 'panCopy':
-        return (fileName, url) {
+        return (fileName, url, updatedStatus) {
           panUrl.value = url;
           panFileName.value = fileName;
           panError.value = '';
+          panUpdatedStatusID.value = updatedStatus;
         };
 
       case 'gstCopy':
-        return (fileName, url) {
+        return (fileName, url, updatedStatus) {
           gstUrl.value = url;
           gstFileName.value = fileName;
           gstError.value = '';
+          gstUpdatedStatusID.value = updatedStatus;
         };
 
       case 'idProof':
-        return (fileName, url) {
+        return (fileName, url, updatedStatus) {
           idProofFileName.value = fileName;
           idProofUrl.value = url;
           idProofError.value = '';
+          idProofUpdatedStatusID.value = updatedStatus;
         };
     }
     return null;
@@ -603,85 +581,9 @@ class CreateAccountController extends GetxController {
   }
 }
 
-/*
-{
-  "memberID": "FDD3433",
-  "memberName": "Muthuraj Test 2",
-  "designation": "1",                  - no change
-  "companyName": "9SquareTech",
-  "address": "XXXXX",
-  "city": "XXX TEST",
-  "pincode": "600052",
-  "district": "1",
-  "mobileNumber": "9499956224",
-  "maskedMobileNumber": "9499956224",
-  "profile": "Manufacturer",
-  "memberPhotoURL": "https://kgsma.thejewelleryworld.com/tempImages/9499956224-5d2dbea8651b409-photoCopy.jpg", - no need to pass
-  "photoFileName": "9499956224-5d2dbea8651b409-photoCopy.jpg",
-  "isPhotoUpdated": 0,
-  "appID": "31a0a9e2-28e6-f011-b836-126635fa33e6",
-  "area": "Anna Street",
-  "stateID": 1,
-  "emailID": "muthuraj@gmail.com",
-  "pan": "ABCDE1234Z",
-  "panFileName": "9499956224-b1179e5b8c5c4e4-panCopy.jpg",
-  "isPANUpdated": 0,
-  "gst": "GH454534RTGRT54",
-  "gstFileName": "9499956224-6d609ac98e94453-gstCopy.jpg",
-  "isGSTUpdated": 0,
-  "idProof": "",
-  "idProofFileName": "",
-  "isIDProofUpdated": 0,
-  "saveFlag": 0,
-  "isActive": 1
-}
- */
 
-/*
+// 0 - false,
+// 1 - true
 
-Future<void> loadUserData() async {
-  try {
-    isLoading.value = true;
-
-    final memberId = await storage.read('member_id');
-
-    final response = await ApiBaseService.request<Map<String, dynamic>>(
-      'UserData/GetUserData',
-      method: RequestMethod.GET,
-      queryParams: {
-        "memberID": memberId,
-      },
-      authenticated: false,
-    );
-
-    final data = response['data'];
-
-    if (data == null) return;
-
-    // 👇 Fill controllers
-    nameController.text = data['memberName'] ?? '';
-    designationController.text = data['designation'] ?? '';
-    companyController.text = data['companyName'] ?? '';
-    phoneNumberController.text = data['mobileNumber'] ?? '';
-    emailController.text = data['emailID'] ?? '';
-    pinCodeController.text = data['pincode'] ?? '';
-    areaController.text = data['area'] ?? '';
-    cityController.text = data['city'] ?? '';
-
-    // 👇 Dropdowns (IMPORTANT)
-    stateId.value = data['stateID']?.toString() ?? '';
-    districtId.value = data['district']?.toString() ?? '';
-
-    // 👇 Files
-    profilePhotoUrl.value = data['memberPhotoURL'] ?? '';
-    panUrl.value = data['pan'] ?? '';
-    gstUrl.value = data['gst'] ?? '';
-
-  } catch (e) {
-    print("Error loading user data: $e");
-  } finally {
-    isLoading.value = false;
-  }
-}
-
- */
+// for image update flow :
+// for updated - defualt should be 0 and if values comes from upload api means - assign it to save api

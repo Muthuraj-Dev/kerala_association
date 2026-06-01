@@ -71,13 +71,14 @@ class _DashboardAppBar extends StatelessWidget implements PreferredSizeWidget {
           ),
         ),
 
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications, size: 30),
-            color: AppColor.secondary,
-            onPressed: () => Get.to(() => NotificationScreen()),
-          ),
-        ],
+        // Temporary Hide //
+        // actions: [
+        //   IconButton(
+        //     icon: const Icon(Icons.notifications, size: 30),
+        //     color: AppColor.secondary,
+        //     onPressed: () => Get.to(() => NotificationScreen()),
+        //   ),
+        // ],
       );
   }
 }
