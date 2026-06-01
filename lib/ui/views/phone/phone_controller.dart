@@ -64,7 +64,7 @@ class PhoneController extends GetxController {
             sentOtp: response.data!.sentOtp!,
           ),
         );
-      } else if (response.status == "100" && response.data != null) {
+      } else if (response.status == "101") {
         CommonDialog.showCustomDialog(
           content: Padding(
             padding: const EdgeInsets.all(16.0),
@@ -78,8 +78,8 @@ class PhoneController extends GetxController {
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 8),
-                const Text(
-                  "Your account has been deleted. Please contact support or create a new account.",
+                Text(
+                  response.message ?? "",
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 20),
