@@ -74,7 +74,7 @@
 import 'package:get/get.dart';
 
 import '../../../helper/update_checker.dart';
-import '../../../locator.dart';
+
 
 class DashboardController extends GetxController {
   final RxInt selectedIndex = 0.obs;
@@ -93,6 +93,7 @@ class DashboardController extends GetxController {
   void onItemTapped(int index) {
     if (selectedIndex.value == index) return;
     selectedIndex.value = index;
+    print("selectedIndex ${selectedIndex.value}");
   }
 
   void goToTab(int index) {
@@ -107,7 +108,17 @@ class DashboardController extends GetxController {
 
     if (!_hasCheckedUpdate) {
       _hasCheckedUpdate = true;
-      locator<UpdateChecker>().versionCheck();
+      // locator<UpdateChecker>().versionCheck();
+      // ✅ FIXED (GetX way)
+      Get.find<UpdateChecker>().versionCheck();
+    }
+  }
+
+
+  void validateIndex(int maxLength) {
+    if (maxLength == 0) return;
+    if (selectedIndex.value >= maxLength) {
+      selectedIndex.value = maxLength - 1;
     }
   }
 }

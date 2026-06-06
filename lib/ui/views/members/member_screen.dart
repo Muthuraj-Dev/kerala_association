@@ -8,6 +8,7 @@ import 'package:kerala_association/common_widget/common_dialog.dart';
 import 'package:kerala_association/common_widget/common_text_field.dart';
 import 'package:kerala_association/core/res/colors.dart';
 import '../../../core/model/member_list_response.dart';
+import '../phone/phone_screen.dart';
 import 'member_controller.dart';
 import 'member_detail.dart';
 
@@ -24,6 +25,14 @@ class MemberScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            const Padding(
+              padding: EdgeInsets.only(left: 10, top: 16,),
+              child: Text(
+                "Network with members",
+                style: TextStyle(fontSize: 24),
+              ),
+            ),
+
             Obx(
               () => IgnorePointer(
                 ignoring: !controller.isPremiumUnlocked.value,
@@ -113,8 +122,10 @@ class MemberScreen extends StatelessWidget {
                                 ),
                                 const SizedBox(height: 20),
                                 CommonButton(
-                                  text: "Get Premium",
-                                  onPressed: () {},
+                                  text: "Login to Access", // "Get Premium",
+                                  onPressed: () {
+                                    Get.to(() => PhoneScreen());
+                                  },
                                   borderRadius: BorderRadius.circular(50),
                                   fillColor: AppColor.secondary,
                                 ),

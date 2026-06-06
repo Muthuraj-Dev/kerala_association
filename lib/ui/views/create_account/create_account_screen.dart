@@ -602,7 +602,7 @@ class CreateAccountScreen extends StatelessWidget {
                     text:
                         controller.isLoading.value
                             ? "Please wait..."
-                            : "Create Account",
+                            :  !controller.isEditMode.value ? "Create Account" : "Update Account",
                     borderRadius: BorderRadius.circular(40),
                     suffixIcon: SvgPicture.asset(
                       "assets/arrow_outward.svg",

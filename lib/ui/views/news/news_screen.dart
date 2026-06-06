@@ -18,26 +18,6 @@ class NewsScreen extends StatefulWidget {
 class _NewsScreenState extends State<NewsScreen> {
   final NewsController controller = Get.find();
 
-  // @override
-  // void initState() {
-  //   super.initState();
-  //
-  //   final dashboardController = Get.find<DashboardController>();
-  //
-  //   /// wait until UI builds
-  //   Future.delayed(const Duration(milliseconds: 300), () {
-  //     final pendingId = dashboardController.pendingNewsId;
-  //
-  //     if (pendingId != null && pendingId.isNotEmpty) {
-  //       dashboardController.clearPendingNews();
-  //
-  //       Get.to(() => NewsDetailScreen(
-  //         newsId: pendingId,
-  //       ));
-  //     }
-  //   });
-  // }
-
   bool _handledNavigation = false;
 
   @override
@@ -144,13 +124,36 @@ class _NewsScreenState extends State<NewsScreen> {
                                 const SizedBox(height: 6),
 
                                 /// SOURCE + DATE
-                                Text(
-                                  "${news.source ?? ''} • ${news.publishedOn ?? ''}",
-                                  style: const TextStyle(
-                                    fontSize: 12,
-                                    color: Color(0xff505050),
-                                  ),
-                                ),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        "${news.source ?? ''} • ${news.publishedOn ?? ''}",
+                                        style: const TextStyle(
+                                          fontSize: 12,
+                                          color: Color(0xff505050),
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+
+                                    Obx(() {
+                                      final id = news.newsID?.toString() ?? '';
+                                      final isFav = controller.isFavorite(id);
+
+                                      return IconButton(
+                                        onPressed: () {
+                                          controller.toggleFavorite(id);
+                                        },
+                                        icon: Icon(
+                                          isFav ? Icons.favorite : Icons.favorite_border,
+                                          color: isFav ? Colors.red : Colors.grey,
+                                        ),
+                                      );
+                                    })
+                                  ],
+                                )
                               ],
                             ),
                           ),

@@ -221,7 +221,7 @@ class OtpController extends GetxController {
         print("Existing User - as PAN AVAILABLE");
         await Get.find<ProfileController>().initProfile();
         Get.offAll(() => DashboardScreen());
-        Get.find<DashboardController>().goToTab(3);
+     //   Get.find<DashboardController>().goToTab(3);
 
         return;
       }

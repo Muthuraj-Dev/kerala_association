@@ -22,7 +22,7 @@ class EventScreen extends StatelessWidget {
           children: [
             const Padding(
               padding: EdgeInsets.only(left: 16, top: 16, bottom: 10),
-              child: Text("Events", style: TextStyle(fontSize: 24)),
+              child: Text("Pre-Registration", style: TextStyle(fontSize: 24)),
             ),
 
             Expanded(
@@ -153,7 +153,7 @@ class EventScreen extends StatelessWidget {
                                         children: [
                                           Expanded(
                                             child: CommonButton(
-                                              text: "Register Now",
+                                              text: "Book Pass for Pre-Register",
                                               borderRadius: BorderRadius.circular(42),
                                               //            height: 40,
                                               onPressed: () {
@@ -167,26 +167,26 @@ class EventScreen extends StatelessWidget {
                                               ),
                                             ),
                                           ),
-                                          const SizedBox(width: 16),
-                                          Expanded(
-                                            child: CommonButton(
-                                              text: "Stall enquiry",
-                                              //     height: 40,
-                                              borderRadius: BorderRadius.circular(42),
-                                              isOutlined: true,
-                                              isFilled: false,
-                                              isTransparent: true,
-                                              onPressed: () {
-                                                controller.launchUrlSafe(
-                                                  event.stallEnquiryURL,
-                                                );
-                                              },
-                                              suffixIcon: SvgPicture.asset(
-                                                "assets/arrow_outward.svg",
-                                                color: AppColor.green,
-                                              ),
-                                            ),
-                                          ),
+                                          // const SizedBox(width: 16),
+                                          // Expanded(
+                                          //   child: CommonButton(
+                                          //     text: "Stall enquiry",
+                                          //     //     height: 40,
+                                          //     borderRadius: BorderRadius.circular(42),
+                                          //     isOutlined: true,
+                                          //     isFilled: false,
+                                          //     isTransparent: true,
+                                          //     onPressed: () {
+                                          //       controller.launchUrlSafe(
+                                          //         event.stallEnquiryURL,
+                                          //       );
+                                          //     },
+                                          //     suffixIcon: SvgPicture.asset(
+                                          //       "assets/arrow_outward.svg",
+                                          //       color: AppColor.green,
+                                          //     ),
+                                          //   ),
+                                          // ),
                                         ],
                                       ),
                                     ],

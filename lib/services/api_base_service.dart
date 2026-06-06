@@ -216,57 +216,6 @@ class ApiBaseService {
     return null;
   }
 
-  // Future<dynamic> uploadImage(File file, String endpoint) async {
-  //   var request = http.MultipartRequest('POST', Uri.parse(baseUrl + endpoint))
-  //     ..files.add(await http.MultipartFile.fromPath('file', file.path));
-  //
-  //   var response =
-  //       await _sendAsync('POST', endpoint, request, authenticated: true);
-  //   if (response != null) {
-  //     return jsonDecode(response.body)['file'];
-  //   }
-  //   throw Exception("Image upload failed");
-  // }
-
-  // Working File Upload
-  // Future<dynamic> uploadImage(
-  //     File file,
-  //     String endpoint, {
-  //       required String fileCategory,
-  //       required String gstNumber,
-  //       required String mobileNumber,
-  //     })
-  // async {
-  //   var uri = Uri.parse(baseUrl + endpoint);
-  //
-  //   var request = http.MultipartRequest('POST', uri)
-  //     ..files.add(await http.MultipartFile.fromPath('uploadedFile', file.path))
-  //     ..fields['fileCategory'] = fileCategory
-  //     ..fields['gstNumber'] = gstNumber
-  //     ..fields['mobileNumber'] = mobileNumber;
-  //
-  //   // 🖨️ Print request details
-  //   print('📤 UPLOADING TO: $uri');
-  //   print('📄 FILE PATH: ${file.path}');
-  //   print('📁 FIELD fileCategory: $fileCategory');
-  //   print('🏢 FIELD gstNumber: $gstNumber');
-  //   print('📱 FIELD mobileNumber: $mobileNumber');
-  //   print('🧾 HEADERS: ${request.headers}');
-  //
-  //   var response = await _sendAsync(
-  //     'POST',
-  //     endpoint,
-  //     request,
-  //     authenticated: false,
-  //   );
-  //
-  //   if (response != null && response.statusCode == 200) {
-  //     return jsonDecode(response.body);
-  //   }
-  //
-  //   throw Exception("Image upload failed");
-  // }
-
   Future<dynamic> uploadImage(
       File file,
       String endpoint, {

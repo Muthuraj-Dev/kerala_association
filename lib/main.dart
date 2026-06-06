@@ -23,7 +23,7 @@ import 'core/res/colors.dart';
 import 'core/res/styles.dart';
 
 import 'firebase_options_prod.dart';
-import 'locator.dart';
+
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -37,10 +37,11 @@ Future<void> main() async {
   // // Setup service locator
   // Init network service (after config is set)
   // ✅ Register BEFORE anything uses it
+  Get.put<AppConfigService>(AppConfigService(), permanent: true);
   Get.put(SecureStorageService(), permanent: true);
 
-  setupLocator();
-  locator<NetworkService>().onInit();
+  // setupLocator();
+  //  locator<NetworkService>().onInit();
 
   try {
     // Fetch config from Firebase Remote Config
@@ -59,7 +60,8 @@ Future<void> main() async {
     final Map<String, dynamic> configMap = jsonDecode(rawJson);
 
     // Set App Config into service
-    locator<AppConfigService>().setConfig(configMap);
+    // locator<AppConfigService>().setConfig(configMap);
+    Get.find<AppConfigService>().setConfig(configMap);
   } catch (e) {
     debugPrint('Failed to fetch or decode remote config: $e');
   }

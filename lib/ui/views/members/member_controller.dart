@@ -7,9 +7,13 @@ import '../../../core/model/district_list_response.dart';
 import '../../../core/model/member_list_response.dart';
 import '../../../services/api_base_service.dart';
 import '../../../services/request_method.dart';
-import '../../../services/secure_storage_service.dart'; // Assuming Member is here
+import '../../../services/secure_storage_service.dart';
+import '../profile/profile_controller.dart'; // Assuming Member is here
 
 class MemberController extends GetxController {
+
+  final ProfileController profileController = Get.find();
+
   // --- UI Controllers ---
   final ScrollController scrollController = ScrollController();
   final TextEditingController searchController = TextEditingController();
@@ -18,9 +22,9 @@ class MemberController extends GetxController {
   final _storage = SecureStorageService(); // or your existing wrapper
 
   // --- User State ---
-  final RxBool isLoggedIn = false.obs;
-  final RxString memberId = ''.obs;
-  final RxString memberName = ''.obs;
+  // final RxBool isLoggedIn = false.obs;
+  // final RxString memberId = ''.obs;
+  // final RxString memberName = ''.obs;
 
   // final selectedDistrict = Rxn<String>();
   final RxnString selectedItem = RxnString();
@@ -39,9 +43,27 @@ class MemberController extends GetxController {
   final RxList<MemberListData> allMembers = <MemberListData>[].obs;
   final RxList<MemberListData> filteredMembers = <MemberListData>[].obs;
 
+  // @override
+  // void onInit() {
+  //   super.onInit();
+  //   loadProfile().then((_) {
+  //     fetchMembers();
+  //   });
+  //
+  //   searchController.addListener(() {
+  //     applyFilters();
+  //   });
+  // }
+
   @override
   void onInit() {
     super.onInit();
+
+    ever(profileController.hasPan, (bool value) {
+      isPremiumUnlocked.value = value;
+      print("🔥 hasPan changed: $value");
+    });
+
     loadProfile().then((_) {
       fetchMembers();
     });
@@ -52,17 +74,15 @@ class MemberController extends GetxController {
   }
 
   Future<void> loadProfile() async {
-    final loggedIn = await _storage.read("is_logged_in");
-
-    if (loggedIn == "true") {
-      isLoggedIn.value = true;
-      memberId.value = await _storage.read("member_id") ?? '';
-      memberName.value = await _storage.read("member_name") ?? '';
+    if (profileController.hasPan.value) {
+      // isLoggedIn.value = true;
+      // memberId.value = await _storage.read("member_id") ?? '';
+      // memberName.value = await _storage.read("member_name") ?? '';
       isPremiumUnlocked.value = true;
     } else {
-      isLoggedIn.value = false;
-      memberId.value = '';
-      memberName.value = '';
+      // isLoggedIn.value = false;
+      // memberId.value = '';
+      // memberName.value = '';
       isPremiumUnlocked.value = false;
     }
   }
@@ -247,7 +267,7 @@ class MemberController extends GetxController {
       // Call API without generic
       final DistrictListResponse response =
           await ApiBaseService.request<DistrictListResponse>(
-            'GetDistrictList',
+            'GetDistrictList?StateID=12',
             method: RequestMethod.GET,
             authenticated: false,
           );

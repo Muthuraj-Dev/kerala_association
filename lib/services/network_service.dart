@@ -17,7 +17,7 @@ import '../ui/widgets/button.dart';
 
 
 
-class NetworkService extends GetxController {
+class NetworkService extends GetxService {
 
   bool _dialogShown = false;
 
@@ -27,6 +27,7 @@ class NetworkService extends GetxController {
   void onInit() {
     super.onInit();
 
+    print("NetworkService initialized");
     subscription = Connectivity().onConnectivityChanged.listen((List<ConnectivityResult> resultList) {
       final hasConnection = resultList.any((r) => r != ConnectivityResult.none);
 

@@ -10,31 +10,70 @@ import 'package:kerala_association/ui/views/profile/profile_controller.dart';
 import '../controllers/master_data_controller.dart';
 import '../services/secure_storage_service.dart';
 
+// class AppBinding extends Bindings {
+//   @override
+//   void dependencies() {
+//
+//
+//     // ✅ Master data (GLOBAL + SHARED)
+//     Get.put(MasterDataController(), permanent: true,);
+//
+// // ✅ Feature controllers (lazy)
+//     Get.lazyPut(() => NewsController(), fenix: true);
+//     // What fenix: true does
+//     // If controller is not found → recreate it automatically
+//     Get.lazyPut(() => EventController());
+//     Get.lazyPut(() => ProfileController(), fenix: true);
+//     Get.lazyPut(() => MemberController());
+//     Get.lazyPut(() => NewsDetailController(), fenix: true);
+//     // Get.put(PhoneController(), permanent: true);
+//     Get.put(PhoneController());
+//
+//     Get.lazyPut(() => CreateAccountController(), fenix: true);
+//
+//     // Better approach (lazyPut) (recommended)
+//     // ✔ Created only when needed
+//     // ✔ Cleaner lifecycle
+//   }
+// }
+
+import 'package:kerala_association/services/appconfig_service.dart';
+import 'package:kerala_association/services/network_service.dart';
+import 'package:kerala_association/services/navigator_service.dart';
+import 'package:kerala_association/services/token_manager.dart';
+import 'package:kerala_association/helper/update_checker.dart';
+
 class AppBinding extends Bindings {
   @override
   void dependencies() {
-    // ✅ Core services
+    // =========================
+    // 🔥 CORE SERVICES (GLOBAL)
+    // =========================
+
+    Get.put(AppConfigService(), permanent: true);
+    Get.put(NetworkService(), permanent: true);
+    Get.put(NavigationService(), permanent: true);
+    Get.put(TokenManager(), permanent: true);
     Get.put(SecureStorageService(), permanent: true);
+    Get.put(UpdateChecker(), permanent: true);
 
-    // ✅ Master data (GLOBAL + SHARED)
-    Get.put(MasterDataController(), permanent: true,);
+    // =========================
+    // 🔥 GLOBAL CONTROLLERS
+    // =========================
 
-// ✅ Feature controllers (lazy)
+    Get.put(MasterDataController(), permanent: true);
+
+    // =========================
+    // 🔥 FEATURE CONTROLLERS
+    // =========================
+
     Get.lazyPut(() => NewsController(), fenix: true);
-    // What fenix: true does
-    // If controller is not found → recreate it automatically
     Get.lazyPut(() => EventController());
     Get.lazyPut(() => ProfileController(), fenix: true);
-    Get.lazyPut(() => MemberController());
+    Get.lazyPut(() => MemberController(), fenix: true);
     Get.lazyPut(() => NewsDetailController(), fenix: true);
-    // Get.put(PhoneController(), permanent: true);
     Get.put(PhoneController());
-
     Get.lazyPut(() => CreateAccountController(), fenix: true);
-
-    // Better approach (lazyPut) (recommended)
-    // ✔ Created only when needed
-    // ✔ Cleaner lifecycle
   }
 }
 

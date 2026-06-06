@@ -16,7 +16,6 @@ class ProfileController extends GetxController {
 
   final SecureStorageService _storage = SecureStorageService();
 
-  final RxBool isLoggedIn = false.obs;
   final RxString memberName = ''.obs;
   final RxString memberId = ''.obs;
   final RxString mobileNumber = ''.obs;
@@ -77,7 +76,6 @@ class ProfileController extends GetxController {
         mobileNumber.value = data['mobileNumber'] ?? '';
 
         hasPan.value = (data['panNumber'] ?? '').toString().isNotEmpty;
-        isLoggedIn.value = true;
       }
 
     } catch (e) {

@@ -10,6 +10,20 @@ class NewsController extends GetxController {
   final isLoading = false.obs;
   final newsList = <NewsData>[].obs;
 
+  final RxSet<String> favoriteIds = <String>{}.obs;
+
+  void toggleFavorite(String newsId) {
+    if (favoriteIds.contains(newsId)) {
+      favoriteIds.remove(newsId);
+    } else {
+      favoriteIds.add(newsId);
+    }
+  }
+
+  bool isFavorite(String newsId) {
+    return favoriteIds.contains(newsId);
+  }
+
 
   @override
   void onInit() {
